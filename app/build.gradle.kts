@@ -14,10 +14,16 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        // 面板地址（可在 CI 里用环境变量覆盖）
-        val panelUrl = System.getenv("PANEL_URL") ?: "https://blog.jermainli.world/panel/"
-        val panelUser = System.getenv("PANEL_USER") ?: "jermain"
-        val panelPass = System.getenv("PANEL_PASS") ?: "123456"
+        // 面板地址与凭据（CI 里用 Secrets 注入；未配置时回退到默认值）
+        // 注意：GitHub Actions 未设置的 secret 会传成空字符串（不是 null），
+        // 所以这里必须用 isNullOrBlank 判断，否则会编译出空账号密码 → 打开一片空白
+        fun envOr(key: String, fallback: String): String {
+            val v = System.getenv(key)
+            return if (v.isNullOrBlank()) fallback else v.trim()
+        }
+        val panelUrl = envOr("PANEL_URL", "https://blog.jermainli.world/panel/")
+        val panelUser = envOr("PANEL_USER", "jermain")
+        val panelPass = envOr("PANEL_PASS", "123456")
         buildConfigField("String", "PANEL_URL", "\"$panelUrl\"")
         buildConfigField("String", "PANEL_USER", "\"$panelUser\"")
         buildConfigField("String", "PANEL_PASS", "\"$panelPass\"")

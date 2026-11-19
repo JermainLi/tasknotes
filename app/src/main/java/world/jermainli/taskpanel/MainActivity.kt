@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
                 realm: String?
             ) {
                 // 面板用 Basic Auth；这里自动填凭据（构建时注入，见 build.gradle.kts）
+                android.util.Log.d("TaskPanel", "auth 请求 host=$host realm=$realm user=${BuildConfig.PANEL_USER}")
                 handler?.proceed(BuildConfig.PANEL_USER, BuildConfig.PANEL_PASS)
             }
 
@@ -69,9 +70,21 @@ class MainActivity : AppCompatActivity() {
                 handler?.cancel()   // 证书有问题就拒绝，别放行
             }
 
+            override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                errorView.visibility = View.VISIBLE
+                errorView.text = "正在连接…"
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 swipe.isRefreshing = false
                 errorView.visibility = View.GONE
+            }
+        }
+
+        web.webChromeClient = object : android.webkit.WebChromeClient() {
+            override fun onConsoleMessage(m: android.webkit.ConsoleMessage?): Boolean {
+                android.util.Log.d("TaskPanel", "JS: ${m?.message()} @${m?.lineNumber()}")
+                return true
             }
         }
 
