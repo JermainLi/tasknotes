@@ -46,3 +46,17 @@ jobs:
           name: taskpanel-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 30
+
+      # 发布到 Release：APK 变成公开可下载链接，方便直接取用/发到手机
+      - name: 发布 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: TaskNotes ${{ github.run_number }}
+          body: |
+            自动构建 · commit ${{ github.sha }}
+            面板地址：https://blog.jermainli.world/panel/
+          files: app/build/outputs/apk/debug/*.apk
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
